@@ -6,6 +6,7 @@ Console app to help find songs tempo by pressing keys on keyboard.
 ### More info
 A small CLI app to guess BPM tempo using keyboard. It also shows delay for
 quarter, eighth & sixteenth in ms.
+It was initially designed to create a command-line application (CLI) in Rust, in order to familiarize myself with this language.
 
 ### i18n
 Beside english, german & french texts are included.
