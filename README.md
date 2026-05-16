@@ -9,3 +9,14 @@ quarter, eighth & sixteenth in ms.
 
 ### i18n
 Beside english, german & french texts are included.
+
+### It does look like this:
+```
+  +----------------------------------+
+  |         TEMPO TAP                |
+  +----------------------------------+
+  Press any key to get tempo
+  Ctrl+C or 'q' to quit.
+  ♩ 102 BPM  │  ⏸  │  8 keystrockes
+  Quarter = 587.0 ms, Eighth = 293.5 ms, Sixteenth = 146.8 ms
+```
