@@ -29,11 +29,11 @@ const PAUSE_THRESHOLD_MS: u128 = 3000;
 const TEMPO_ROW: u16 = 5;
 
 struct TapTempo {
-    /// Latests keystrockes
+    // Latests keystrockes
     taps: Vec<Instant>,
-    /// Last computed BPM (None if not yet two keystrockes)
+    // Last computed BPM (None if not yet two keystrockes)
     last_bpm: Option<f64>,
-    /// Latest keystrock instant
+    // Latest keystrock instant
     last_tap: Option<Instant>,
 }
 
