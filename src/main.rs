@@ -1,14 +1,14 @@
 /******
- * tempo-tap by Lol Zimmerli
- * 
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
+* tempo-tap by Lol Zimmerli
+* 
+* This Source Code Form is subject to the terms of the Mozilla Public
+* License, v. 2.0. If a copy of the MPL was not distributed with this
+* file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*/
 
 use crossterm::{
     cursor,
-    event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
+    event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
     execute,
     style::{Color, Print, ResetColor, SetForegroundColor},
     terminal::{self, ClearType},
@@ -45,53 +45,53 @@ impl TapTempo {
             last_tap: None,
         }
     }
-
+    
     fn tap(&mut self) {
         let now = Instant::now();
-
+        
         // If pause is too long, clear to compute from zero again
         if let Some(last) = self.last_tap {
             if last.elapsed().as_millis() > PAUSE_THRESHOLD_MS {
                 self.taps.clear();
             }
         }
-
+        
         self.taps.push(now);
         self.last_tap = Some(now);
-
+        
         // Keep only latest MIN_STEPS keystrockes
         if self.taps.len() > MIN_STEPS {
             self.taps.remove(0);
         }
-
+        
         // At least two keystrocks to have an interval
         if self.taps.len() >= 2 {
             self.last_bpm = Some(self.compute_bpm());
         }
     }
-
+    
     fn compute_bpm(&self) -> f64 {
         let n = self.taps.len();
         // Total duration between keystrocks
         let total_ms = self.taps[n - 1]
-            .duration_since(self.taps[0])
-            .as_secs_f64()
-            * 1000.0;
+        .duration_since(self.taps[0])
+        .as_secs_f64()
+        * 1000.0;
         // ƒ of intervals is # of keystrocks -1
         let avg_interval_ms = total_ms / (n as f64 - 1.0);
         // BPM = 60 000 ms / average interval
         60_000.0 / avg_interval_ms
     }
-
+    
     fn tap_count(&self) -> usize {
         self.taps.len()
     }
-
+    
     // Show if pause-mode
     fn is_paused(&self) -> bool {
         self.last_tap
-            .map(|t| t.elapsed().as_millis() > PAUSE_THRESHOLD_MS)
-            .unwrap_or(false)
+        .map(|t| t.elapsed().as_millis() > PAUSE_THRESHOLD_MS)
+        .unwrap_or(false)
     }
 }
 
@@ -102,7 +102,7 @@ fn render(tap: &TapTempo, lang: &'static str, stdout: &mut impl Write) -> std::i
         cursor::MoveTo(0, TEMPO_ROW),
         terminal::Clear(ClearType::CurrentLine),
     )?;
-
+    
     match tap.last_bpm {
         None => {
             let hint = format!("  {} ({}/{})", i18n::t(lang, "tap_hint"), tap.tap_count(), 2);
@@ -115,7 +115,7 @@ fn render(tap: &TapTempo, lang: &'static str, stdout: &mut impl Write) -> std::i
         }
         Some(bpm) => {
             let bpm_rounded = bpm.round() as u32;
-
+            
             // Color is life, life is colors
             let color = match bpm_rounded {
                 0..=59 => Color::Blue,
@@ -124,7 +124,7 @@ fn render(tap: &TapTempo, lang: &'static str, stdout: &mut impl Write) -> std::i
                 130..=179 => Color::Magenta,
                 _ => Color::Red,
             };
-
+            
             let pause_indicator = if tap.is_paused() { " ⏸" } else { " ▶" };
             let appuis = i18n::t(lang, "appuis");
             execute!(
@@ -143,14 +143,14 @@ fn render(tap: &TapTempo, lang: &'static str, stdout: &mut impl Write) -> std::i
             )?;
         }
     }
-
+    
     // Show delays for quarter, eighth & sixteenth notes in ms
     execute!(
         stdout,
         cursor::MoveTo(0, TEMPO_ROW + 1),
         terminal::Clear(ClearType::CurrentLine),
     )?;
-
+    
     if let Some(bpm) = tap.last_bpm {
         let quarter_ms = 60_000.0 / bpm;
         let eigther_ms: f64 = quarter_ms / 2.00;
@@ -158,16 +158,16 @@ fn render(tap: &TapTempo, lang: &'static str, stdout: &mut impl Write) -> std::i
         let note_4 = i18n::t(lang, "note_noire");
         let note_8 = i18n::t(lang, "note_croche");
         let note_16 = i18n::t(lang, "note_double");
-
+        
         execute!(
             stdout,
             SetForegroundColor(Color::DarkGrey),
             Print(format!("  {} = {:.1} ms, {} = {:.1} ms, {} = {:.1} ms",
-                note_4, quarter_ms, note_8, eigther_ms, note_16, sx_ms)),
+            note_4, quarter_ms, note_8, eigther_ms, note_16, sx_ms)),
             ResetColor,
         )?;
     }
-
+    
     stdout.flush()?;
     Ok(())
 }
@@ -195,48 +195,49 @@ fn print_header(stdout: &mut impl Write, lang: &'static str) -> std::io::Result<
 
 fn main() -> std::io::Result<()> {
     let mut stdout = stdout();
-
+    
     // Use raw mode : keys are read without wainting for [RETURN]
     terminal::enable_raw_mode()?;
-
+    
     // Hide cursos
     execute!(stdout, cursor::Hide)?;
-
+    
     let lang = i18n::detect_lang();
     let mut tap = TapTempo::new();
-
+    
     print_header(&mut stdout, lang)?;
-
+    
     loop {
         // Non-blocking reading with timeout (to detect pauses)
         if event::poll(Duration::from_millis(200))? {
             match event::read()? {
-                // Quit with Ctrl+C or 'q'
+                // Quit with Ctrl+C
                 Event::Key(KeyEvent {
                     code: KeyCode::Char('c'),
                     modifiers: KeyModifiers::CONTROL,
                     ..
-                })
-                | Event::Key(KeyEvent {
+                }) => { break; }
+                
+                // Quit with 'q'
+                Event::Key(KeyEvent {
                     code: KeyCode::Char('q'),
                     modifiers: KeyModifiers::NONE,
+                    kind: KeyEventKind::Press,
                     ..
-                }) => {
-                    break;
+                }) => { break; }
+                
+                // Any Press = tap (sauf modifiers seuls)
+                Event::Key(KeyEvent { kind: KeyEventKind::Press, code, .. }) => {
+                    match code {
+                        KeyCode::Modifier(_) => {}
+                        _ => {
+                            tap.tap();
+                            render(&tap, lang, &mut stdout)?;
+                        }
+                    }
                 }
-
-                // Ignore dead keys alone
-                Event::Key(KeyEvent {
-                    code: KeyCode::Modifier(_),
-                    ..
-                }) => {}
-
-                // Any other key = tap
-                Event::Key(_) => {
-                    tap.tap();
-                    render(&tap, lang, &mut stdout)?;
-                }
-
+                
+                // Ignore Release, Repeat, etc.
                 _ => {}
             }
         } else {
@@ -246,7 +247,7 @@ fn main() -> std::io::Result<()> {
             }
         }
     }
-
+    
     // Cleaning : restore terminal
     terminal::disable_raw_mode()?;
     execute!(
@@ -257,6 +258,6 @@ fn main() -> std::io::Result<()> {
         Print("  Bye !\r\n"),
         ResetColor,
     )?;
-
+    
     Ok(())
 }
