@@ -74,9 +74,9 @@ impl TapTempo {
         let n = self.taps.len();
         // Total duration between keystrocks
         let total_ms = self.taps[n - 1]
-        .duration_since(self.taps[0])
-        .as_secs_f64()
-        * 1000.0;
+            .duration_since(self.taps[0])
+            .as_secs_f64()
+            * 1000.0;
         // ƒ of intervals is # of keystrocks -1
         let avg_interval_ms = total_ms / (n as f64 - 1.0);
         // BPM = 60 000 ms / average interval
@@ -90,8 +90,8 @@ impl TapTempo {
     // Show if pause-mode
     fn is_paused(&self) -> bool {
         self.last_tap
-        .map(|t| t.elapsed().as_millis() > PAUSE_THRESHOLD_MS)
-        .unwrap_or(false)
+            .map(|t| t.elapsed().as_millis() > PAUSE_THRESHOLD_MS)
+            .unwrap_or(false)
     }
 }
 
@@ -163,7 +163,7 @@ fn render(tap: &TapTempo, lang: &'static str, stdout: &mut impl Write) -> std::i
             stdout,
             SetForegroundColor(Color::DarkGrey),
             Print(format!("  {} = {:.1} ms, {} = {:.1} ms, {} = {:.1} ms",
-            note_4, quarter_ms, note_8, eigther_ms, note_16, sx_ms)),
+                note_4, quarter_ms, note_8, eigther_ms, note_16, sx_ms)),
             ResetColor,
         )?;
     }
@@ -211,7 +211,7 @@ fn main() -> std::io::Result<()> {
         // Non-blocking reading with timeout (to detect pauses)
         if event::poll(Duration::from_millis(200))? {
             match event::read()? {
-                // Quit with Ctrl+C
+                // Quit with Ctrl+C or q
                 Event::Key(KeyEvent {
                     code: KeyCode::Char('c'),
                     modifiers: KeyModifiers::CONTROL,
