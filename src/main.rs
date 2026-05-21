@@ -216,9 +216,7 @@ fn main() -> std::io::Result<()> {
                     code: KeyCode::Char('c'),
                     modifiers: KeyModifiers::CONTROL,
                     ..
-                }) => { break; }
-                
-                // Quit with 'q'
+                }) => { break; }                
                 Event::Key(KeyEvent {
                     code: KeyCode::Char('q'),
                     modifiers: KeyModifiers::NONE,
@@ -226,7 +224,7 @@ fn main() -> std::io::Result<()> {
                     ..
                 }) => { break; }
                 
-                // Any Press = tap (sauf modifiers seuls)
+                // Any Press = tap except dead keys alone
                 Event::Key(KeyEvent { kind: KeyEventKind::Press, code, .. }) => {
                     match code {
                         KeyCode::Modifier(_) => {}
