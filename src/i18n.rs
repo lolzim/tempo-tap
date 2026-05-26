@@ -19,31 +19,31 @@ pub fn t(lang: &'static str, key: &'static str) -> &'static str {
     match (lang, key) {
         ("fr", "tap_hint") => "Appuyez sur n'importe quelle touche...",
         ("de", "tap_hint") => "Beliebige Taste drücken...",
-        (_,    "tap_hint") => "Press any key...",
+        (_, "tap_hint") => "Press any key...",
 
         ("fr", "tap_hint_too") => "Appuyez sur n'importe quelle touche pour taper le tempo.",
         ("de", "tap_hint_too") => "Beliebige Taste drücken zum Tempo sehen",
-        (_,    "tap_hint_too") => "Press any key to get tempo",
+        (_, "tap_hint_too") => "Press any key to get tempo",
 
         ("fr", "quit_hint") => "Ctrl+C ou 'q' pour quitter.",
         ("de", "quit_hint") => "Ctrl+C oder 'q' zum beenden.",
-        (_,    "quit_hint") => "Ctrl+C or 'q' to quit.",
+        (_, "quit_hint") => "Ctrl+C or 'q' to quit.",
 
         ("fr", "note_noire") => "Noire",
         ("de", "note_noire") => "Viertelnote",
-        (_,    "note_noire") => "Quarter",
+        (_, "note_noire") => "Quarter",
 
         ("fr", "note_croche") => "Croche",
         ("de", "note_croche") => "Achtelnote",
-        (_,    "note_croche") => "Eighth",
+        (_, "note_croche") => "Eighth",
 
         ("fr", "note_double") => "Double croche",
         ("de", "note_double") => "Sechzehntelnote",
-        (_,    "note_double") => "Sixteenth",
+        (_, "note_double") => "Sixteenth",
 
         ("fr", "appuis") => "appuis",
         ("de", "appuis") => "Tastendrücke",
-        (_,    "appuis") => "keystrockes",
+        (_, "appuis") => "keystrockes",
         _ => key, // fallback
     }
 }
