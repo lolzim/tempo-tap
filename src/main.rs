@@ -1,5 +1,6 @@
 /******
 * tempo-tap by Lol Zimmerli
+* V 0.3
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -76,6 +77,9 @@ impl TapTempo {
         let total_ms = self.taps[n - 1].duration_since(self.taps[0]).as_secs_f64() * 1000.0;
         // ƒ of intervals is # of keystrocks -1
         let avg_interval_ms = total_ms / (n as f64 - 1.0);
+        if avg_interval_ms <= 10.0 {
+            return 10.0; // min acceptable
+        }
         // BPM = 60 000 ms / average interval
         60_000.0 / avg_interval_ms
     }
