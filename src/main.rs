@@ -14,6 +14,7 @@ use crossterm::{
     style::{Color, Print, ResetColor, SetForegroundColor},
     terminal::{self, ClearType},
 };
+use std::collections::VecDeque;
 use std::io::{Write, stdout};
 use std::time::{Duration, Instant};
 
@@ -31,7 +32,7 @@ const TEMPO_ROW: u16 = 5;
 
 struct TapTempo {
     // Latests keystrockes
-    taps: Vec<Instant>,
+    taps: VecDeque<Instant>,
     // Last computed BPM (None if not yet two keystrockes)
     last_bpm: Option<f64>,
     // Latest keystrock instant
@@ -41,7 +42,7 @@ struct TapTempo {
 impl TapTempo {
     fn new() -> Self {
         Self {
-            taps: Vec::with_capacity(MIN_STEPS + 1),
+            taps: VecDeque::with_capacity(MIN_STEPS + 1),
             last_bpm: None,
             last_tap: None,
         }
@@ -57,17 +58,21 @@ impl TapTempo {
             }
         }
 
-        self.taps.push(now);
+        self.taps.push_back(now);
         self.last_tap = Some(now);
 
         // Keep only latest MIN_STEPS keystrockes
         if self.taps.len() > MIN_STEPS {
-            self.taps.remove(0);
+            self.taps.pop_front();
         }
 
         // At least two keystrocks to have an interval
         if self.taps.len() >= 2 {
             self.last_bpm = Some(self.compute_bpm());
+        }
+
+        if self.taps.len() > MIN_STEPS {
+            self.taps.pop_front(); // O(1) au lieu de O(n)
         }
     }
 
@@ -215,6 +220,8 @@ fn main() -> std::io::Result<()> {
 
     print_header(&mut stdout, lang)?;
 
+    let mut last_bpm: Option<f64> = None;
+    let mut last_paused = false;
     loop {
         // Non-blocking reading with timeout (to detect pauses)
         if event::poll(Duration::from_millis(200))? {
@@ -253,14 +260,21 @@ fn main() -> std::io::Result<()> {
                 _ => {}
             }
         } else {
-            // Timeout : refresh display
+            let current_bpm = tap.last_bpm;
+            let current_paused = tap.is_paused();
+            // Refresh display if tempo changed
             if tap.last_bpm.is_some() {
-                render(&tap, lang, &mut stdout)?;
+                if current_bpm != last_bpm || current_paused != last_paused {
+                    render(&tap, lang, &mut stdout)?;
+                    last_bpm = current_bpm;
+                    last_paused = current_paused;
+                }
             }
         }
     }
 
     // Cleaning : restore terminal
+    stdout.flush()?;
     terminal::disable_raw_mode()?;
     execute!(
         stdout,
