@@ -1,6 +1,6 @@
 /******
 * tempo-tap by Lol Zimmerli
-* V 0.3
+* V 0.3.3
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -72,7 +72,7 @@ impl TapTempo {
         }
 
         if self.taps.len() > MIN_STEPS {
-            self.taps.pop_front(); // O(1) au lieu de O(n)
+            self.taps.pop_front(); // O(1) instead of O(n)
         }
     }
 

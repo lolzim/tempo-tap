@@ -1,7 +1,7 @@
 # tempo-tap
 
 ### Short presentation
-Console app to help find music tempo by pressing keys on keyboard.
+Console app to help find music tempo by pressing keys on keyboard on rhythm.
 
 ### More info
 A small CLI app to guess BPM tempo using keyboard. It also shows delay for
